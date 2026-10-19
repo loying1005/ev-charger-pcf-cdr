@@ -1,20 +1,20 @@
 # EV Charger Product Carbon Footprint & CDR Neutralization Plan
 
-A product carbon footprint (PCF) of an AC Level 2 electric vehicle charger, followed by a carbon dioxide removal (CDR) portfolio designed to neutralize its residual emissions.
+A product carbon footprint (PCF) of a typical Level 2 AC electric vehicle charger (wallbox), followed by a carbon dioxide removal (CDR) portfolio designed to neutralize its residual emissions.
 
 > **Disclaimer:** This is an independent learning project built entirely on public data. It does not use, represent, or estimate any company's proprietary or confidential data.
 
 ## Research Question
 
-<!-- TODO (you): Write 1–2 sentences. What decision should this analysis support, and for whom? -->
+What is the cradle-to-grave carbon footprint of a typical Level 2 AC wallbox, where are its emission hotspots, and is the result consistent with published PEP ecopassport declarations for similar products? Based on its residual emissions, what CDR portfolio would credibly neutralize them?
 
 ## Method
 
 | Step | Notebook | Standard / Framework | Output |
 |---|---|---|---|
-| 1. Goal & scope | `01_scope_boundary` | ISO 14067, ISO 14040/14044 | Functional unit, system boundary, cut-off rules, data quality requirements |
-| 2. Inventory & calculation | `02_inventory_calc` | ISO 14067; EPA eGRID | Bill of materials × emission factors; use-phase electricity (California vs. Texas) |
-| 3. Validation | `03_validation` | Pedigree matrix; Monte Carlo | Mass balance check, data quality scores, uncertainty range, benchmark against public PEP ecopassports |
+| 1. Goal & scope | `01_scope_boundary` | ISO 14067 framework, applied through PEP ecopassport PCR ed4 and PSR-0018 | Functional unit, system boundary, cut-off rules, data quality requirements |
+| 2. Inventory & calculation | `02_inventory_calc` | PCR ed4 and PSR-0018; EPA eGRID | Bill of materials × emission factors; use-phase electricity (California vs. Texas); DQR data quality scores |
+| 3. Validation | `03_validation` | DQR (PCR ed4) → pedigree; Monte Carlo | Mass balance check, pedigree-based uncertainty range, benchmark against public PEP ecopassports |
 | 4. CDR portfolio | `04_cdr_portfolio` | — | Removal portfolio scored on additionality, permanence, reversal risk, MRV, cost, and ex-ante vs. ex-post issuance |
 
 ## Repository Structure
@@ -36,7 +36,7 @@ ev-charger-pcf-cdr/
 
 | Notebook | Status |
 |---|---|
-| `01_scope_boundary` | ⬜ Not started |
+| `01_scope_boundary` | ✅ Complete |
 | `02_inventory_calc` | ⬜ Not started |
 | `03_validation` | ⬜ Not started |
 | `04_cdr_portfolio` | ⬜ Not started |

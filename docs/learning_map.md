@@ -3,13 +3,13 @@
 Check off a concept when you can explain it in your own words and in one English interview sentence.
 
 ## 01 — Scope & Boundary
-- [ ] Goal and intended application of a PCF (ISO 14067)
-- [ ] Functional unit vs. declared unit
-- [ ] Reference flow
-- [ ] System boundary: cradle-to-gate vs. cradle-to-grave; life cycle stages
-- [ ] Cut-off rules
-- [ ] Data quality requirements
-- [ ] PCF vs. organizational GHG inventory (GHG Protocol scopes 1–3)
+- [x] Goal and intended application of a PCF (ISO 14067)
+- [x] Functional unit vs. declared unit
+- [x] Reference flow
+- [x] System boundary: cradle-to-gate vs. cradle-to-grave; life cycle stages
+- [x] Cut-off rules
+- [x] Data quality requirements
+- [x] PCF vs. organizational GHG inventory (GHG Protocol scopes 1–3)
 
 ## 02 — Inventory & Calculation
 - [ ] Bill of materials (BOM) and mass basis
