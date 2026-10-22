@@ -12,12 +12,12 @@ Check off a concept when you can explain it in your own words and in one English
 - [x] PCF vs. organizational GHG inventory (GHG Protocol scopes 1–3)
 
 ## 02 — Inventory & Calculation
-- [ ] Bill of materials (BOM) and mass basis
-- [ ] Emission factors: where they come from and how to choose one
-- [ ] Primary vs. secondary data
-- [ ] Use-phase electricity and grid emission factors (EPA eGRID)
+- [x] Bill of materials (BOM) and mass basis
+- [x] Emission factors: where they come from and how to choose one
+- [x] Primary vs. secondary data
+- [x] Use-phase electricity and grid emission factors (EPA eGRID)
 - [ ] Location-based vs. market-based electricity accounting
-- [ ] End-of-life modeling approaches
+- [x] End-of-life modeling approaches
 
 ## 03 — Validation
 - [ ] Mass balance check

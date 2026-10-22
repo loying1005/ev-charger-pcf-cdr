@@ -37,7 +37,7 @@ ev-charger-pcf-cdr/
 | Notebook | Status |
 |---|---|
 | `01_scope_boundary` | ✅ Complete |
-| `02_inventory_calc` | 🟡 In progress |
+| `02_inventory_calc` | ✅ Complete |
 | `03_validation` | ⬜ Not started |
 | `04_cdr_portfolio` | ⬜ Not started |
 
