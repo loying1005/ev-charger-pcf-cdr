@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Cradle-to-grave product carbon footprint of a typical Level 2 AC EV charger (wallbox), built from public data.">
+<title>Level 2 Wallbox Carbon Footprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+</head>
+<body>
+<style>
+/* Layout: a single reading column like an engineering datasheet — results first, method and process in expandable sections below. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #16202a;
+  --muted: #56636f;
+  --rule: #d9dee3;
+  --accent: #0b6e78;
+  --ca: #1f8a7a;
+  --tx: #c1661c;
+  --mfg: #3b5b8c;
+  --other: #9aa6b2;
+  --warn-bg: #fff4e5;
+  --warn-ink: #7a4a00;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161b; --surface: #182028; --ink: #e6ebef; --muted: #9daab6; --rule: #2b3640;
+    --accent: #4fc1c9; --ca: #45c2ae; --tx: #e8914a; --mfg: #7fa2d6; --other: #6d7a86;
+    --warn-bg: #2d2414; --warn-ink: #f2c47a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161b; --surface: #182028; --ink: #e6ebef; --muted: #9daab6; --rule: #2b3640;
+  --accent: #4fc1c9; --ca: #45c2ae; --tx: #e8914a; --mfg: #7fa2d6; --other: #6d7a86;
+  --warn-bg: #2d2414; --warn-ink: #f2c47a; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+main { max-width: 860px; margin: 0 auto; display: grid; gap: 48px; }
+section { display: grid; gap: 16px; min-width: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; font-weight: 600; padding-top: 8px; border-top: 2px solid var(--ink); }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; }
+/* All text uses the full column width; text-wrap: pretty evens out the ragged right edge without stretched word gaps */
+p, li, dd { text-wrap: pretty; }
+.intro { display: grid; gap: 10px; }
+.intro-h { font-size: 0.8rem; font-family: var(--font-data); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.purpose { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.purpose > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.purpose .k { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--accent); }
+.rq { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.rq li { display: grid; grid-template-columns: 3.2rem 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.rq .k { font-family: var(--font-data); font-size: 0.85rem; color: var(--accent); }
+.rq li.planned { color: var(--muted); }
+.rq li.planned .k { color: var(--muted); }
+.disclaimer { list-style: none; padding: 0 0 0 12px; margin: 0; display: grid; gap: 2px; }
+@media (max-width: 640px) { .purpose { grid-template-columns: 1fr; } }
+a { color: var(--accent); }
+.eyebrow { font-family: var(--font-data); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.12rem; color: var(--muted); }
+.disclaimer { font-size: 0.85rem; color: var(--muted); border-left: 3px solid var(--rule); padding-left: 12px; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+.results { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.result { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 6px; min-width: 0; }
+.result .state { font-family: var(--font-data); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.result.ca .state { color: var(--ca); } .result.tx .state { color: var(--tx); }
+.result .big { font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; line-height: 1; }
+.result .big small { font-size: 1rem; font-weight: 500; color: var(--muted); }
+.result .sub { color: var(--muted); font-size: 0.95rem; font-family: var(--font-body); }
+
+.findings { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; counter-reset: f; }
+.findings li { display: grid; grid-template-columns: 2.2rem 1fr; gap: 8px; align-items: baseline; }
+.findings li::before { counter-increment: f; content: counter(f); font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: var(--accent); }
+
+.chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; overflow-x: auto; }
+.chart svg { display: block; width: 100%; height: auto; min-width: 520px; }
+.chart text { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+.chart .axis { stroke: var(--rule); }
+.chart .lbl-muted { fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.caption { font-size: 0.85rem; color: var(--muted); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; font-size: 0.8rem; letter-spacing: 0.03em; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: none; }
+td.r, th.r { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.total td { font-weight: 600; border-top: 2px solid var(--ink); }
+
+details { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+details + details { margin-top: -8px; }
+summary { cursor: pointer; padding: 14px 16px; display: grid; grid-template-columns: 3.4rem 1fr auto; gap: 8px; align-items: baseline; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-family: var(--font-data); color: var(--muted); }
+details[open] > summary::after { content: "−"; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+summary .step { font-family: var(--font-data); font-size: 0.8rem; color: var(--accent); }
+summary .title { font-weight: 600; }
+summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
+.body { padding: 0 16px 16px; display: grid; gap: 12px; }
+.qa { display: grid; grid-template-columns: 7.5rem 1fr; gap: 6px 12px; }
+.qa dt { font-family: var(--font-data); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding-top: 3px; }
+.qa dd { margin: 0; min-width: 0; }
+.tag { font-family: var(--font-data); font-size: 0.75rem; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.note { background: var(--warn-bg); color: var(--warn-ink); border-radius: 6px; padding: 12px 14px; font-size: 0.92rem; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.pill { display: inline-block; font-family: var(--font-data); font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.done { color: var(--ca); } .pill.next { color: var(--tx); }
+.sources { columns: 2 280px; column-gap: 24px; font-size: 0.85rem; padding-left: 0; list-style: none; margin: 0; }
+.sources li { break-inside: avoid; margin-bottom: 6px; }
+@media (max-width: 560px) {
+  .qa { grid-template-columns: 1fr; }
+  summary { grid-template-columns: 2.6rem 1fr auto; }
+}
+@media (prefers-reduced-motion: no-preference) { details[open] .body { animation: fade .2s ease; } }
+@keyframes fade { from { opacity: .6; } to { opacity: 1; } }
+</style>
+
+<main>
+  <header style="display:grid; gap:14px">
+    <div class="eyebrow">Product carbon footprint · ISO 14067 framework · PEP ecopassport PCR ed4 &amp; PSR-0018</div>
+    <h1>Carbon footprint of a typical Level 2 AC wallbox</h1>
+    <p class="lede">A cradle-to-grave product carbon footprint of a typical U.S. Level 2 AC EV charger, built entirely from public data. It is the first half of a study that will size a carbon dioxide removal (CDR) plan for the charger's residual emissions.</p>
+    <div class="intro">
+      <h3 class="intro-h">Purpose</h3>
+      <div class="purpose">
+        <div><span class="k">Reduce</span>Find the hotspots that product design and energy choices can cut.</div>
+        <div><span class="k">Neutralize</span>Quantify the residual emissions a CDR portfolio must remove.</div>
+        <div><span class="k">Check</span>Test the result for plausibility against published PEPs.</div>
+      </div>
+      <h3 class="intro-h">Research questions</h3>
+      <ol class="rq">
+        <li><span class="k">RQ1</span>What is the cradle-to-grave carbon footprint of a typical Level 2 AC wallbox?</li>
+        <li><span class="k">RQ2</span>Which life cycle stages and materials are the emission hotspots?</li>
+        <li><span class="k">RQ3</span>How much does the installation location change the result, California vs. Texas?</li>
+        <li><span class="k">RQ4</span>Is the result consistent with published PEPs for similar wallboxes?</li>
+        <li><span class="k">RQ5</span>Which CDR portfolio could credibly neutralize the residual emissions?</li>
+      </ol>
+    </div>
+    <ul class="disclaimer">
+      <li>Independent learning project that uses public data only.</li>
+      <li>It does not represent any company's products or confidential data.</li>
+      <li>Screening-level study: secondary data, no third-party critical review, and no comparative assertions.</li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="results">
+    <h2 id="results">Results</h2>
+    <p>The two cards show the total carbon footprint of the same wallbox over its 10-year life, from raw materials to disposal. The only difference is where it is installed: California or Texas. The location changes the electricity the charger itself uses while it works and waits. The large number is the total for one wallbox. The small number spreads that total over every kWh the charger supplies to cars.</p>
+    <div class="results">
+      <div class="result ca">
+        <div class="state">Installed in California</div>
+        <div class="big num">162.8 <small>kg CO₂e per wallbox</small></div>
+        <div class="sub num">5.76 g CO₂e per kWh supplied to the vehicle</div>
+      </div>
+      <div class="result tx">
+        <div class="state">Installed in Texas</div>
+        <div class="big num">266.4 <small>kg CO₂e per wallbox</small></div>
+        <div class="sub num">9.43 g CO₂e per kWh supplied to the vehicle</div>
+      </div>
+    </div>
+    <p class="caption">Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh supplied to one vehicle under the PSR-0018 reference scenario (28,251 kWh over the life).</p>
+    <ul class="findings">
+      <li><div><strong>The use stage is the hotspot:</strong> 67% of the total in California and 80% in Texas. Almost half of that electricity is standby power while no vehicle is plugged in.</div></li>
+      <li><div><strong>The grid decides the result:</strong> the same charger has a 64% higher footprint in Texas than in California, because the Texas grid emits about twice as much per kWh.</div></li>
+      <li><div><strong>Manufacturing is led by electronics:</strong> the printed circuit board weighs 0.56 kg but causes 36% of material emissions. Manufacturing (49.5 kg CO₂e) falls within the range of published PEPs (41–126 kg).</div></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="hotspots">
+    <h2 id="hotspots">Hotspots by life cycle stage</h2>
+    <div class="chart" id="stageChart" role="img" aria-label="Stacked bars of emissions by life cycle stage for California and Texas"></div>
+    <div class="legend" id="stageLegend"></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Life cycle stage (module code)</th><th class="r">California</th><th class="r">Texas</th><th>Main driver</th></tr></thead>
+        <tbody>
+          <tr><td>Manufacturing (A1–A3)</td><td class="r">49.5</td><td class="r">49.5</td><td>PCB, PC housing, copper, PSR default manufacturing waste</td></tr>
+          <tr><td>Distribution (A4)</td><td class="r">3.8</td><td class="r">3.8</td><td>19,000 km by ship + 1,000 km by lorry</td></tr>
+          <tr><td>Installation (A5)</td><td class="r">0.3</td><td class="r">0.3</td><td>Packaging waste and its transport</td></tr>
+          <tr><td>Use (B1–B7)</td><td class="r">108.4</td><td class="r">212.1</td><td>580.8 kWh of the charger's own consumption × state grid factor</td></tr>
+          <tr><td>End of life (C1–C4)</td><td class="r">0.8</td><td class="r">0.8</td><td>1,000 km by lorry + landfill</td></tr>
+          <tr class="total"><td>Total</td><td class="r">162.8</td><td class="r">266.4</td><td>kg CO₂e per wallbox</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Module codes are the standard stage labels used in PEP declarations (EN 15804 / EN 50693): A1–A3 raw materials to factory gate, A4 transport to site, A5 installation, B1–B7 use, C1–C4 end of life. Module D (recycling benefits) is reported separately and not added to the total.</p>
+  </section>
+
+  <section aria-labelledby="mfg">
+    <h2 id="mfg">What drives manufacturing</h2>
+    <p>Manufacturing totals 49.5 kg CO₂e: materials 38.4 kg (including packaging) plus 11.1 kg for the PSR default manufacturing waste. Four materials cover 80% of the material emissions; these are the datasets that PCR ed4 requires to be quality-scored.</p>
+    <div class="chart" id="matChart" role="img" aria-label="Bar chart of material emissions"></div>
+    <p class="caption">Material emissions = mass × emission factor. DQR is the PCR data quality rating (1 best, 5 worst); 2–3 is "good".</p>
+  </section>
+
+  <section aria-labelledby="bench">
+    <h2 id="bench">Benchmark against published PEPs</h2>
+    <p>Five attached-cable wallboxes were selected from the 40 EV charging PEPs in the PEP ecopassport registry. The comparison is a plausibility check of the order of magnitude, not a comparative claim: the PEPs use European grids, other databases, and three-phase designs.</p>
+    <div class="cols">
+      <div class="chart" id="benchMfg" role="img" aria-label="Manufacturing emissions per wallbox compared with PEPs"></div>
+      <div class="chart" id="benchKwh" role="img" aria-label="Life cycle emissions per kWh compared with PEPs"></div>
+    </div>
+    <p class="caption">Qovoltis (S14) is excluded from the emission benchmark: its manufacturing result (220 kg) appears to use a different database, and its use stage assumes a 2 Ω contact resistance (28% of delivered energy lost as heat), which is not physically plausible. Only its material composition is used.</p>
+    <div class="note">The first materials-only result (38.4 kg) was below every PEP. Tracing that gap led to the PSR rule for manufacturing waste that had not yet been modeled. After adding it, the result moved into the PEP range.</div>
+  </section>
+
+  <section aria-labelledby="method">
+    <h2 id="method">Method at a glance</h2>
+    <div class="tablewrap">
+      <table>
+        <tbody>
+          <tr><th>Framework</th><td>ISO 14067 / ISO 14040–44, applied through PEP ecopassport PCR ed4 (2021) and PSR-0018 ed1.3 for EV charging infrastructure (2025). The ISO standards themselves were not directly consulted.</td></tr>
+          <tr><th>Product</th><td>Typical U.S. Level 2 AC wallbox with an attached 24 ft cable: 7.13 kg product + 2.05 kg packaging.</td></tr>
+          <tr><th>Functional unit</th><td>Supply 1 kWh to one vehicle through a Level 2 AC wallbox for private or semi-public use, per the PSR-0018 reference scenario.</td></tr>
+          <tr><th>Boundary</th><td>Cradle to grave. Electricity delivered to the vehicle is excluded (assigned to the vehicle under PSR-0018).</td></tr>
+          <tr><th>Indicator</th><td>Climate change (kg CO₂e), IPCC AR5 GWP100 across all datasets.</td></tr>
+          <tr><th>Data</th><td>Public only: PSR/PCR defaults, five PEPs, ICA copper LCA, PlasticsEurope PA6, UK DESNZ 2026 factors, EPA eGRID2023, ENERGY STAR measured data for 386 chargers.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="nb01">
+    <h2 id="nb01">Notebook 01 · Scope and boundary</h2>
+    <p>Six decisions made before any number was calculated. Each one constrains everything after it.</p>
+    <div id="nb01List"></div>
+  </section>
+
+  <section aria-labelledby="nb02">
+    <h2 id="nb02">Notebook 02 · Inventory and calculation</h2>
+    <p>Eleven steps from parameters to a cut-off check. Each step shows what it does, what problem came up, how it was solved, and the result.</p>
+    <div id="nb02List"></div>
+  </section>
+
+  <section aria-labelledby="gaps">
+    <h2 id="gaps">Data gaps and how they were handled</h2>
+    <p>Where public data did not exist, the study used the closest proxy, scored it lower, logged it as an assumption (A01–A20), and chose the more conservative option where the choice was uncertain.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Gap</th><th>Choice</th><th>Why</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>No manufacturer BOM</td><td>Proxy BOM from five PEPs + U.S. datasheets + engineering estimate of cable copper</td><td>Industry data hierarchy when primary data is unavailable</td><td>Body mass 3.6 kg (range 2.0–4.7) <span class="tag">A04</span></td></tr>
+          <tr><td>No PCB-specific factor</td><td>UK factor for IT electrical items</td><td>Only public per-kg option</td><td>PCB = 36% of material emissions; DQR 3.0 <span class="tag">A08</span></td></tr>
+          <tr><td>PC eco-profile not downloadable</td><td>Average rigid plastic factor</td><td>Publisher's legacy server refused connections</td><td>Likely underestimate <span class="tag">A10</span></td></tr>
+          <tr><td>Housing PC vs. ABS</td><td>Model as PC</td><td>PC in four of five PEPs; averaging would describe no real product</td><td>ABS to test <span class="tag">A07</span></td></tr>
+          <tr><td>Manufacturing waste unknown</td><td>PSR default 30%, including the extra material</td><td>Conservative reading of an ambiguous rule</td><td>+11.1 kg CO₂e <span class="tag">A14</span></td></tr>
+          <tr><td>Connector material split unknown</td><td>Modeled as copper</td><td>Higher factor than the plastic proxy</td><td>Conservative <span class="tag">A11</span></td></tr>
+          <tr><td>Factory location unknown</td><td>Global or UK/EU datasets; international shipping default</td><td>Most conservative PCR transport default</td><td>Geography scored lower <span class="tag">A03</span> <span class="tag">A16</span></td></tr>
+          <tr><td>Use scenario is European</td><td>PSR scenario kept as base case</td><td>Comparability with PEPs</td><td>U.S. driving pattern to test <span class="tag">A01</span></td></tr>
+          <tr><td>PSR formula needs product data</td><td>ENERGY STAR measured losses and standby power (median of 386 U.S. chargers)</td><td>Measured U.S. data instead of European defaults</td><td>580.8 kWh over 10 years <span class="tag">A17</span></td></tr>
+          <tr><td>Assembly energy unknown</td><td>Break-even instead of a guess</td><td>Avoids an invented number</td><td>Must exceed 18 kWh/unit to breach 5% <span class="tag">A20</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="limits">
+    <h2 id="limits">Limitations</h2>
+    <div class="panel">
+      <ul>
+        <li><strong>Secondary data only.</strong> No manufacturer primary data; the BOM is a proxy built from European PEPs and U.S. datasheets.</li>
+        <li><strong>Proxies for the largest contributors.</strong> PCB and PC, together 53% of material emissions, use category-level factors.</li>
+        <li><strong>Geography mismatch.</strong> Most material factors are UK or European while production location is unknown; ICA "global" copper excludes China.</li>
+        <li><strong>European use scenario.</strong> Charging frequency and plug-in time come from a 2020 French survey.</li>
+        <li><strong>Climate change only.</strong> Other impact categories are not assessed, and the PCR energy cut-off criterion is checked through climate impact.</li>
+        <li><strong>No critical review.</strong> Results support a plausibility check, not public comparative claims.</li>
+        <li><strong>Benchmark limits.</strong> PEPs differ in grid mix, database, PSR version, and phase; agreement in range does not prove each input is right.</li>
+        <li><strong>Uncertainty not yet quantified.</strong> The Monte Carlo analysis is planned for notebook 03.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="next">
+    <h2 id="next">Next steps</h2>
+    <div class="cols">
+      <div class="panel">
+        <div><span class="pill next">Next</span></div>
+        <h3>Notebook 03 · Validation</h3>
+        <ul>
+          <li>Convert the DQR scores into pedigree-based uncertainty ranges and run a Monte Carlo simulation for a 95% range of the total.</li>
+          <li>Sensitivity tests on the largest assumptions: PCB share 20–25%, a higher PC factor or ABS housing, the literal reading of the waste rule, body mass 2.0–6.4 kg, cable 13.1–25 ft.</li>
+          <li>Replace the European use scenario with U.S. charging behaviour, and test the 25th–75th percentile of ENERGY STAR standby power.</li>
+          <li>Test transport and end-of-life alternatives (intracontinental shipping, incineration, U.S. recycling).</li>
+          <li>Formal benchmark against the PEPs, adjusting for grid differences.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div><span class="pill next">Planned</span></div>
+        <h3>Notebook 04 · CDR portfolio</h3>
+        <ul>
+          <li>Separate reduction levers first: lower standby power, PCB design, renewable electricity for charging.</li>
+          <li>Size the residual emissions to neutralize, including an uncertainty buffer from notebook 03.</li>
+          <li>Score removal options (afforestation, biochar, direct air capture and others) on additionality, permanence, reversal risk, MRV, cost, and ex-ante vs. ex-post issuance.</li>
+          <li>Recommend a portfolio per wallbox; CDR prices and standards are to be verified at the time of analysis.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div><span class="pill next">Open items</span></div>
+        <h3>Data to improve</h3>
+        <ul>
+          <li>Request the PlasticsEurope PC eco-profile.</li>
+          <li>Find a PCB-specific public dataset.</li>
+          <li>Confirm the Delta AC MAX manual values on the manufacturer's own site.</li>
+          <li>Location-based vs. market-based electricity accounting for the use stage.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="src">
+    <h2 id="src">Sources</h2>
+    <ul class="sources">
+      <li><span class="tag">S01</span> PEP ecopassport PSR-0018 ed1.3, EV charging infrastructure (2025)</li>
+      <li><span class="tag">S04–S07</span> ChargePoint, Tesla, Wallbox datasheets; ENERGY STAR Grizzl-E listing</li>
+      <li><span class="tag">S08</span> PEP ecopassport PCR ed4 (2021)</li>
+      <li><span class="tag">S09</span> International Copper Association, semi-fabricated products LCA</li>
+      <li><span class="tag">S10–S14</span> PEPs: Legrand Green'up Home ×2, Ensto One Home, Hager witty One, Qovoltis Qobox mini</li>
+      <li><span class="tag">S15</span> PEP ecopassport registry (40 EV charging PEPs screened)</li>
+      <li><span class="tag">S16</span> Delta AC MAX NA-Smart manual (mass reference point only)</li>
+      <li><span class="tag">S17</span> Phoenix Contact J1772 connector datasheet</li>
+      <li><span class="tag">S18</span> PlasticsEurope PA6 eco-profile (2022)</li>
+      <li><span class="tag">S19</span> UK DESNZ GHG conversion factors 2026</li>
+      <li><span class="tag">S20</span> U.S. EPA eGRID2023</li>
+      <li><span class="tag">S21</span> ENERGY STAR certified AC EVSE dataset</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  var css = function (v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); };
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; }
+
+  // Stage chart: stacked horizontal bars
+  var stages = [
+    { name: "Manufacturing", ca: 49.5, tx: 49.5, color: "--mfg" },
+    { name: "Distribution, installation, end of life", ca: 4.9, tx: 4.9, color: "--other" },
+    { name: "Use (CA)", ca: 108.4, tx: 0, color: "--ca" },
+    { name: "Use (TX)", ca: 0, tx: 212.1, color: "--tx" }
+  ];
+  function drawStages() {
+    var box = document.getElementById("stageChart"); box.innerHTML = "";
+    var W = 760, H = 170, left = 96, right = 70, max = 300, sx = function (v) { return left + v / max * (W - left - right); };
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H });
+    [0, 100, 200, 300].forEach(function (t) {
+      svg.appendChild(el("line", { x1: sx(t), x2: sx(t), y1: 10, y2: H - 48, class: "axis", "stroke-width": 1 }));
+      svg.appendChild(el("text", { x: sx(t), y: H - 30, "text-anchor": "middle", class: "lbl-muted" }, t));
+    });
+    [["California", "ca", 162.8, 24], ["Texas", "tx", 266.4, 70]].forEach(function (row) {
+      var x = left;
+      svg.appendChild(el("text", { x: left - 10, y: row[3] + 22, "text-anchor": "end", "font-weight": 600 }, row[0]));
+      stages.forEach(function (s) {
+        var v = s[row[1]]; if (!v) return;
+        var w = sx(v) - sx(0);
+        svg.appendChild(el("rect", { x: x, y: row[3], width: w, height: 34, fill: css(s.color) }));
+        x += w;
+      });
+      svg.appendChild(el("text", { x: x + 8, y: row[3] + 22, class: "num" }, row[2].toFixed(1)));
+    });
+    svg.appendChild(el("text", { x: (sx(0) + sx(max)) / 2, y: H - 6, "text-anchor": "middle", class: "lbl-muted" }, "kg CO₂e per wallbox"));
+    box.appendChild(svg);
+    var lg = document.getElementById("stageLegend"); lg.innerHTML = "";
+    [["Manufacturing", "--mfg"], ["Use, California grid", "--ca"], ["Use, Texas grid", "--tx"], ["Distribution, installation, end of life", "--other"]].forEach(function (l) {
+      var s = document.createElement("span"); var i = document.createElement("i"); i.style.background = css(l[1]); s.appendChild(i); s.appendChild(document.createTextNode(l[0])); lg.appendChild(s);
+    });
+  }
+
+  // Material chart
+  var mats = [["PCB", 13.88, 3.0], ["PC housing", 6.70, 3.0], ["Copper (cable, body)", 5.88, 2.67], ["PVC cable jacket", 4.39, 2.33], ["Connector (as copper)", 1.96, 3.0], ["Cardboard", 1.86, 2.33], ["PA", 1.23, 2.33], ["Steel", 1.04, 3.0], ["Seven other materials", 1.46, null]];
+  function drawMats() {
+    var box = document.getElementById("matChart"); box.innerHTML = "";
+    var W = 760, row = 30, top = 10, H = top + mats.length * row + 50, left = 170, right = 120, max = 15;
+    var sx = function (v) { return left + v / max * (W - left - right); };
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H });
+    [0, 5, 10, 15].forEach(function (t) {
+      svg.appendChild(el("line", { x1: sx(t), x2: sx(t), y1: top, y2: H - 46, class: "axis" }));
+      svg.appendChild(el("text", { x: sx(t), y: H - 28, "text-anchor": "middle", class: "lbl-muted" }, t));
+    });
+    var cum = 0, total = 38.4;
+    mats.forEach(function (m, i) {
+      var y = top + i * row;
+      cum += m[1];
+      var col = cum - m[1] < 0.8 * total ? css("--mfg") : css("--other");
+      svg.appendChild(el("text", { x: left - 10, y: y + 19, "text-anchor": "end" }, m[0]));
+      svg.appendChild(el("rect", { x: sx(0), y: y + 5, width: sx(m[1]) - sx(0), height: 20, fill: col }));
+      svg.appendChild(el("text", { x: sx(m[1]) + 6, y: y + 19, class: "num" }, m[1].toFixed(1) + (m[2] ? "   DQR " + m[2].toFixed(1) : "")));
+    });
+    svg.appendChild(el("text", { x: (sx(0) + sx(max)) / 2, y: H - 6, "text-anchor": "middle", class: "lbl-muted" }, "kg CO₂e per wallbox"));
+    box.appendChild(svg);
+  }
+
+  // Benchmarks: dot plots
+  function dotPlot(id, title, unit, max, ticks, rows) {
+    var box = document.getElementById(id); box.innerHTML = "";
+    var W = 420, row = 30, top = 34, H = top + rows.length * row + 54, left = 150, right = 40;
+    var sx = function (v) { return left + v / max * (W - left - right); };
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H });
+    svg.style.minWidth = "360px";
+    svg.appendChild(el("text", { x: 0, y: 16, "font-weight": 600 }, title));
+    ticks.forEach(function (t) {
+      svg.appendChild(el("line", { x1: sx(t), x2: sx(t), y1: top - 6, y2: H - 48, class: "axis" }));
+      svg.appendChild(el("text", { x: sx(t), y: H - 30, "text-anchor": "middle", class: "lbl-muted" }, t));
+    });
+    rows.forEach(function (r, i) {
+      var y = top + i * row + 12;
+      svg.appendChild(el("text", { x: left - 10, y: y + 4, "text-anchor": "end", "font-weight": r.ours ? 600 : 400 }, r.label));
+      svg.appendChild(el("line", { x1: sx(0), x2: sx(r.v), y1: y, y2: y, stroke: css("--rule"), "stroke-width": 2 }));
+      svg.appendChild(el("circle", { cx: sx(r.v), cy: y, r: r.ours ? 7 : 5, fill: css(r.color) }));
+      svg.appendChild(el("text", { x: sx(r.v) + 10, y: y + 4, class: "num" }, r.v.toFixed(r.dec)));
+    });
+    svg.appendChild(el("text", { x: (sx(0) + sx(max)) / 2, y: H - 6, "text-anchor": "middle", class: "lbl-muted" }, unit));
+    box.appendChild(svg);
+  }
+  function drawBench() {
+    dotPlot("benchMfg", "Manufacturing per wallbox", "kg CO₂e", 140, [0, 40, 80, 120], [
+      { label: "This study", v: 49.5, color: "--accent", ours: true, dec: 1 },
+      { label: "Legrand 1-ph (S10)", v: 41.2, color: "--other", dec: 1 },
+      { label: "Legrand 3-ph (S11)", v: 48.6, color: "--other", dec: 1 },
+      { label: "Ensto (S12)", v: 53.0, color: "--other", dec: 1 },
+      { label: "Hager witty One (S13)", v: 126.3, color: "--other", dec: 1 }
+    ]);
+    dotPlot("benchKwh", "Life cycle per kWh supplied", "g CO₂e / kWh", 12, [0, 4, 8, 12], [
+      { label: "This study, CA grid", v: 5.76, color: "--ca", ours: true, dec: 2 },
+      { label: "This study, TX grid", v: 9.43, color: "--tx", ours: true, dec: 2 },
+      { label: "Legrand 1-ph, EU (S10)", v: 6.99, color: "--other", dec: 2 },
+      { label: "Legrand 3-ph, EU (S11)", v: 6.28, color: "--other", dec: 2 },
+      { label: "Ensto, EU (S12)", v: 11.3, color: "--other", dec: 1 },
+      { label: "Hager, Europe (S13)", v: 8.59, color: "--other", dec: 2 }
+    ]);
+  }
+
+  // Notebook steps
+  var nb01 = [
+    ["§1", "Goal", "Why the footprint is calculated and for whom.",
+     "Define intended application, audience, and whether public comparisons are made.",
+     "Two uses (hotspots; residual emissions for CDR) plus a benchmark against PEPs; no third-party review, so no comparative claims.",
+     "Framed as a screening-level study following the ISO 14067 framework through PCR ed4 and PSR-0018.",
+     "Goal statement that sets how rigorous every later choice must be."],
+    ["§2", "Functional unit and reference flow", "What one unit of the product's function is.",
+     "Per wallbox or per kWh? The PSR also gives a 10-year lifetime and 28,251 kWh, derived from a French driving survey.",
+     "Adopted the PSR-0018 functional unit (1 kWh supplied to one vehicle) for comparability, and kept the declared unit (one wallbox, 10 years) for CDR sizing.",
+     "Reference flow: 1/28,251 of one single-point wallbox per kWh, including the attached cable, packaging, and supplied accessories.",
+     "Cable presence and length were verified from four U.S. datasheets instead of assumed: 23–25 ft, base 24 ft (A02)."],
+    ["§3", "System boundary", "Which life cycle stages and processes are counted.",
+     "Which processes inside each stage are excluded?",
+     "Cradle to grave, as the PEPs use; exclusions listed per stage from PSR-0018 §3.2.",
+     "Grid connection, monitoring networks, hand tools, building works, and electricity delivered to the vehicle are excluded.",
+     "All eight stages included with a written justification."],
+    ["§4", "Cut-off rules", "What may be left out.",
+     "Small items can be excluded, but low-mass, high-impact parts must not be.",
+     "PCR ed4 §2.3: excluded flows ≤ 5% of mass, energy, and impact in aggregate; Table 2 materials (copper, gold, silver, microprocessors) always included.",
+     "Compliance demonstrated in notebook 02 with an exclusion summary table.",
+     "Quantified, testable rule."],
+    ["§5", "Data quality requirements", "The bar data must meet before it is used.",
+     "Public data only, unknown production location.",
+     "PCR ed4 §2.9: data within 10 years, global or regional averages (A03), U.S. grid data for use, PCR source priority, DQR = (TeR + GR + TiR) / 3.",
+     "The same scores are reused in notebook 03 to derive pedigree uncertainty ranges.",
+     "One scoring basis for both the quality report and the Monte Carlo analysis."],
+    ["§6", "Consistency review", "An assurance-style check before calculating.",
+     "Wording drifted from later decisions; the research question was empty.",
+     "Aligned the goal, README, and sources; recorded that ISO texts were applied through the PCR and PSR.",
+     "All checks passed.",
+     "Every decision traceable to a source or an assumption."]
+  ];
+  var nb02 = [
+    ["§0", "Parameters", "Carry the notebook 01 decisions into the calculation.", "—", "Fixed parameters with source IDs.", "28,251 kWh, 10 years, 24 ft cable, 5% cut-off, DQR settings.", ""],
+    ["§1", "Data sources", "Choose where emission factors come from.",
+     "No paid databases; the PlasticsEurope PC eco-profile could not be downloaded.",
+     "Industry LCIs where available (ICA copper, PlasticsEurope PA6), UK DESNZ 2026 for the rest, EPA eGRID2023 for the grid; each with its PCR priority level.",
+     "Four sources cover every material; PC and PCB rely on category proxies.", ""],
+    ["§2", "Proxy BOM", "Build the bill of materials without manufacturer data.",
+     "Only one public PEP is a single-phase wallbox with a cable; datasheets do not say whether weights include the cable.",
+     "Screened the PEP registry (40 → 5 attached-cable wallboxes); triangulated body mass from sources that state it without cable; estimated cable copper from conductor sizes; split materials with the mean of five PEPs.",
+     "7.13 kg product (body 3.6, cable 3.0, connector 0.54) + 2.05 kg packaging; mass balance closes; ENERGY STAR later confirmed 25 ft / 8 AWG as the market median.", ""],
+    ["§3", "Emission factors and DQR", "Assign a factor and a quality score to every material.",
+     "Which materials matter enough to score strictly?",
+     "PCR Annex E scoring; datasets covering 80% of impact flagged.",
+     "PCB 36%, PC 17%, copper 15%, PVC 11% of material emissions; DQR 2.3–3.0 (good).", ""],
+    ["§4", "Manufacturing", "Materials plus processing.",
+     "The materials-only result (38.4 kg) was below every PEP.",
+     "Confirmed DESNZ factors include forming; added the PSR default manufacturing waste (30%, conservative reading).",
+     "49.5 kg CO₂e, within the PEP range.", ""],
+    ["§5", "Distribution and installation", "Transport to site and packaging waste.",
+     "Factory location unknown.",
+     "PCR international default (19,000 km ship + 1,000 km lorry); PSR packaging end-of-life rates.",
+     "Distribution 3.76 kg; installation 0.26 kg.", ""],
+    ["§6", "Use stage", "The charger's own electricity, California vs. Texas.",
+     "PSR formula needs contact resistance and standby data; eGRID rates are at generation.",
+     "ENERGY STAR measured losses and standby power (median of 386 chargers) on the PSR timeline; eGRID2023 state rates adjusted for grid losses.",
+     "580.8 kWh over 10 years → 108.4 kg (CA) and 212.1 kg (TX).", ""],
+    ["§7", "End of life", "Treatment after removal.",
+     "U.S. treatment of this product is unknown.",
+     "PCR default: 1,000 km lorry + landfill; recycling benefits kept in Module D.",
+     "0.80 kg CO₂e.", ""],
+    ["§8", "Results", "Totals per wallbox and per kWh, and stage shares.", "—", "Summed all stages.", "162.8 kg (CA) and 266.4 kg (TX); use stage 67–80%.", ""],
+    ["§9", "Cut-off check", "Prove that what was left out stays under 5%.",
+     "No data for wire drawing, PA moulding, or assembly energy.",
+     "Deliberately high upper bounds; break-even analysis for assembly instead of a guess.",
+     "Excluded items 1.0% of the total; assembly would need more than 18 kWh per wallbox to breach 5%.", ""],
+    ["§10", "Consistency review", "Assurance-style checklist.", "—", "Checked parameters, sources, Table 2 items, DQR, exclusions.", "All checks passed; A01–A20 logged.", ""]
+  ];
+  function renderSteps(id, steps) {
+    var host = document.getElementById(id); host.innerHTML = "";
+    steps.forEach(function (s) {
+      var d = document.createElement("details");
+      var sum = document.createElement("summary");
+      sum.innerHTML = '<span class="step"></span><span class="title"></span><span class="gist"></span>';
+      sum.querySelector(".step").textContent = s[0];
+      sum.querySelector(".title").textContent = s[1];
+      sum.querySelector(".gist").textContent = s[2];
+      d.appendChild(sum);
+      var body = document.createElement("div"); body.className = "body";
+      var dl = document.createElement("dl"); dl.className = "qa";
+      [["Problem", s[3]], ["Solution", s[4]], ["Result", s[5]], ["Note", s[6]]].forEach(function (p) {
+        if (!p[1] || p[1] === "—") return;
+        var dt = document.createElement("dt"); dt.textContent = p[0];
+        var dd = document.createElement("dd"); dd.textContent = p[1];
+        dl.appendChild(dt); dl.appendChild(dd);
+      });
+      body.appendChild(dl); d.appendChild(body); host.appendChild(d);
+    });
+  }
+
+  function drawAll() { drawStages(); drawMats(); drawBench(); }
+  renderSteps("nb01List", nb01);
+  renderSteps("nb02List", nb02);
+  drawAll();
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", drawAll);
+  }
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
+</body>
+</html>
