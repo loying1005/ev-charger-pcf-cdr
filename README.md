@@ -40,7 +40,7 @@ Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh s
 
 **Key findings**
 
-1. **The hotspot is the charger's own electricity, not the factory:** the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. In California, that standby alone (49.4 kg CO₂e) equals the footprint of manufacturing the whole charger (49.5 kg). See [where the use-stage electricity goes](#where-the-use-stage-electricity-goes).
+1. **The hotspot is the charger's own electricity, not the factory:** the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. Under the PSR reference scenario, that standby alone emits about as much in California (49.4 kg CO₂e) as manufacturing the whole charger (49.5 kg). See [where the use-stage electricity goes](#where-the-use-stage-electricity-goes).
 2. **The grid decides the result:** the same charger has a 64% higher footprint in Texas than in California, because the Texas grid emits about twice as much per kWh.
 3. **Manufacturing is led by electronics:** the printed circuit board weighs 0.56 kg but causes 36% of material emissions. Manufacturing (49.5 kg CO₂e) falls within the range of published PEPs (41–126 kg).
 
@@ -70,9 +70,9 @@ Over its 10-year life the charger is always in one of three modes. Under the PSR
 | No vehicle | Nothing connected; charger on standby | 75,120 (85.8%) | 3.5 W | 264.8 kWh (45.6%) | 49.4 | 96.7 |
 | **Total** | | **87,600** | | **580.8 kWh** | **108.4** | **212.1** |
 
-> **Note:** The no-vehicle standby draws only 3.5 W, but it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Cutting standby power is the cheapest reduction lever before any carbon removal is needed.
+> **Note:** The no-vehicle standby draws only 3.5 W (median), but under the PSR scenario it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Across the middle half of ENERGY STAR chargers (2.7–5.2 W) the range is 39–73 kg, so standby and manufacturing are the same order of magnitude; in Texas, standby is about twice manufacturing. Cutting standby power is the cheapest reduction lever before any carbon removal is needed.
 
-Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid.
+Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid. The 86% comes from the PSR reference scenario (a European survey), not U.S. measurements; a U.S. charging pattern and the full standby range will be tested in notebook 03. The 39–73 kg range uses the 25th–75th percentile of S21 no-vehicle power.
 
 ## What drives manufacturing
 

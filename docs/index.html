@@ -182,7 +182,7 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
     </div>
     <p class="caption">Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh supplied to one vehicle under the PSR-0018 reference scenario (28,251 kWh over the life).</p>
     <ul class="findings">
-      <li><div><strong>The hotspot is the charger's own electricity, not the factory:</strong> the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. In California, that standby alone (49.4 kg CO₂e) equals the footprint of manufacturing the whole charger (49.5 kg). <a href="#standby">See the breakdown.</a></div></li>
+      <li><div><strong>The hotspot is the charger's own electricity, not the factory:</strong> the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. Under the PSR reference scenario, that standby alone emits about as much in California (49.4 kg CO₂e) as manufacturing the whole charger (49.5 kg). <a href="#standby">See the breakdown.</a></div></li>
       <li><div><strong>The grid decides the result:</strong> the same charger has a 64% higher footprint in Texas than in California, because the Texas grid emits about twice as much per kWh.</div></li>
       <li><div><strong>Manufacturing is led by electronics:</strong> the printed circuit board weighs 0.56 kg but causes 36% of material emissions. Manufacturing (49.5 kg CO₂e) falls within the range of published PEPs (41–126 kg).</div></li>
     </ul>
@@ -224,8 +224,8 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
         </tbody>
       </table>
     </div>
-    <div class="note">The no-vehicle standby draws only 3.5 W, but it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Cutting standby power is the cheapest reduction lever before any carbon removal is needed.</div>
-    <p class="caption">Emissions in kg CO₂e per wallbox. Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid.</p>
+    <div class="note">The no-vehicle standby draws only 3.5 W (median), but under the PSR scenario it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Across the middle half of ENERGY STAR chargers (2.7–5.2 W) the range is 39–73 kg, so standby and manufacturing are the same order of magnitude; in Texas, standby is about twice manufacturing. Cutting standby power is the cheapest reduction lever before any carbon removal is needed.</div>
+    <p class="caption">Emissions in kg CO₂e per wallbox. Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid. The 86% comes from the PSR reference scenario (a European survey), not U.S. measurements; a U.S. charging pattern and the full standby range will be tested in notebook 03. The 39–73 kg range uses the 25th–75th percentile of S21 no-vehicle power.</p>
   </section>
 
   <section aria-labelledby="mfg">
@@ -416,7 +416,7 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
   ];
   function drawModes() {
     var box = document.getElementById("modeChart"); box.innerHTML = "";
-    var W = 760, H = 172, left = 190, right = 20, sx = function (v) { return left + v / 100 * (W - left - right); };
+    var W = 760, H = 184, left = 190, right = 20, sx = function (v) { return left + v / 100 * (W - left - right); };
     var svg = el("svg", { viewBox: "0 0 " + W + " " + H });
     [0, 25, 50, 75, 100].forEach(function (t) {
       svg.appendChild(el("line", { x1: sx(t), x2: sx(t), y1: 14, y2: H - 48, class: "axis" }));
