@@ -40,7 +40,7 @@ Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh s
 
 **Key findings**
 
-1. **The use stage is the hotspot:** 67% of the total in California and 80% in Texas. Almost half of that electricity is standby power while no vehicle is plugged in.
+1. **The hotspot is the charger's own electricity, not the factory:** the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. In California, that standby alone (49.4 kg CO₂e) equals the footprint of manufacturing the whole charger (49.5 kg). See [where the use-stage electricity goes](#where-the-use-stage-electricity-goes).
 2. **The grid decides the result:** the same charger has a 64% higher footprint in Texas than in California, because the Texas grid emits about twice as much per kWh.
 3. **Manufacturing is led by electronics:** the printed circuit board weighs 0.56 kg but causes 36% of material emissions. Manufacturing (49.5 kg CO₂e) falls within the range of published PEPs (41–126 kg).
 
@@ -56,6 +56,23 @@ Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh s
 | **Total** | **162.8** | **266.4** | kg CO₂e per wallbox |
 
 Module codes are the standard stage labels used in PEP declarations (EN 15804 / EN 50693): A1–A3 raw materials to factory gate, A4 transport to site, A5 installation, B1–B7 use, C1–C4 end of life. Module D (recycling benefits) is reported separately and not added to the total.
+
+## Where the use-stage electricity goes
+
+Over its 10-year life the charger is always in one of three modes. Under the PSR-0018 scenario it charges a car 1,040 times. Each time the car stays plugged in for 12 hours, but charging takes only 2.4 hours at 11.52 kW. For the rest of the life no car is connected, and the charger still draws a few watts to stay ready.
+
+![Share of time and share of use-stage electricity for the three charger modes](docs/img/use_stage_modes.svg)
+
+| Mode | What happens | Hours in 10 years | Power | Electricity | California (kg CO₂e) | Texas (kg CO₂e) |
+|---|---|---:|---:|---:|---:|---:|
+| Charging | Power flows to the car; the charger loses some as heat | 2,446 (2.8%) | 104.4 W loss | 255.2 kWh (43.9%) | 47.7 | 93.2 |
+| Idle, car plugged in | Car is connected but full, waiting | 10,034 (11.5%) | 6.1 W | 60.8 kWh (10.5%) | 11.3 | 22.2 |
+| No vehicle | Nothing connected; charger on standby | 75,120 (85.8%) | 3.5 W | 264.8 kWh (45.6%) | 49.4 | 96.7 |
+| **Total** | | **87,600** | | **580.8 kWh** | **108.4** | **212.1** |
+
+> **Note:** The no-vehicle standby draws only 3.5 W, but it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Cutting standby power is the cheapest reduction lever before any carbon removal is needed.
+
+Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid.
 
 ## What drives manufacturing
 
@@ -339,6 +356,7 @@ ev-charger-pcf-cdr/
 │   └── processed/      # Cleaned and derived tables
 └── docs/
     ├── index.html            # Website version of this README (GitHub Pages)
+    ├── img/                  # Chart images used in this README
     ├── learning_map.md       # Concepts covered in each step
     └── assumptions_log.md    # Every assumption, with rationale and source
 ```

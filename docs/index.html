@@ -25,6 +25,9 @@
   --other: #9aa6b2;
   --warn-bg: #fff4e5;
   --warn-ink: #7a4a00;
+  --m-charge: #3b6f9c;
+  --m-idle: #7d8a96;
+  --m-none: #b4462f;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -179,7 +182,7 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
     </div>
     <p class="caption">Declared unit: one wallbox over a 10-year service life. Functional unit: 1 kWh supplied to one vehicle under the PSR-0018 reference scenario (28,251 kWh over the life).</p>
     <ul class="findings">
-      <li><div><strong>The use stage is the hotspot:</strong> 67% of the total in California and 80% in Texas. Almost half of that electricity is standby power while no vehicle is plugged in.</div></li>
+      <li><div><strong>The hotspot is the charger's own electricity, not the factory:</strong> the use stage is 67% of the total in California and 80% in Texas. 46% of that electricity is drawn while no vehicle is plugged in. In California, that standby alone (49.4 kg CO₂e) equals the footprint of manufacturing the whole charger (49.5 kg). <a href="#standby">See the breakdown.</a></div></li>
       <li><div><strong>The grid decides the result:</strong> the same charger has a 64% higher footprint in Texas than in California, because the Texas grid emits about twice as much per kWh.</div></li>
       <li><div><strong>Manufacturing is led by electronics:</strong> the printed circuit board weighs 0.56 kg but causes 36% of material emissions. Manufacturing (49.5 kg CO₂e) falls within the range of published PEPs (41–126 kg).</div></li>
     </ul>
@@ -203,6 +206,26 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
       </table>
     </div>
     <p class="caption">Module codes are the standard stage labels used in PEP declarations (EN 15804 / EN 50693): A1–A3 raw materials to factory gate, A4 transport to site, A5 installation, B1–B7 use, C1–C4 end of life. Module D (recycling benefits) is reported separately and not added to the total.</p>
+  </section>
+
+  <section aria-labelledby="standby">
+    <h2 id="standby">Where the use-stage electricity goes</h2>
+    <p>Over its 10-year life the charger is always in one of three modes. Under the PSR-0018 scenario it charges a car 1,040 times. Each time the car stays plugged in for 12 hours, but charging takes only 2.4 hours at 11.52 kW. For the rest of the life no car is connected, and the charger still draws a few watts to stay ready.</p>
+    <div class="chart" id="modeChart" role="img" aria-label="Share of time and share of use-stage electricity for the three charger modes"></div>
+    <div class="legend" id="modeLegend"></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Mode</th><th>What happens</th><th class="r">Hours in 10 years</th><th class="r">Power</th><th class="r">Electricity</th><th class="r">California<br>kg CO₂e</th><th class="r">Texas<br>kg CO₂e</th></tr></thead>
+        <tbody>
+          <tr><td>Charging</td><td>Power flows to the car; the charger loses some as heat</td><td class="r">2,446 (2.8%)</td><td class="r">104.4 W loss</td><td class="r">255.2 kWh (43.9%)</td><td class="r">47.7</td><td class="r">93.2</td></tr>
+          <tr><td>Idle, car plugged in</td><td>Car is connected but full, waiting</td><td class="r">10,034 (11.5%)</td><td class="r">6.1 W</td><td class="r">60.8 kWh (10.5%)</td><td class="r">11.3</td><td class="r">22.2</td></tr>
+          <tr><td>No vehicle</td><td>Nothing connected; charger on standby</td><td class="r">75,120 (85.8%)</td><td class="r">3.5 W</td><td class="r">264.8 kWh (45.6%)</td><td class="r">49.4</td><td class="r">96.7</td></tr>
+          <tr class="total"><td>Total</td><td></td><td class="r">87,600</td><td></td><td class="r">580.8 kWh</td><td class="r">108.4</td><td class="r">212.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">The no-vehicle standby draws only 3.5 W, but it lasts 86% of the life. Over 10 years it emits 49.4 kg CO₂e in California, about the same as manufacturing the whole charger (49.5 kg). Cutting standby power is the cheapest reduction lever before any carbon removal is needed.</div>
+    <p class="caption">Emissions in kg CO₂e per wallbox. Power = median of 386 ENERGY STAR-certified Level 2 chargers (S21); hours follow the PSR-0018 scenario (S01): 1,040 charges × 27.09 kWh, 12 hours plugged in per charge. Emissions = electricity × state grid factor (0.1867 kg CO₂e/kWh California, 0.3651 Texas; eGRID2023 with grid losses, S20). Each mode's share of emissions equals its share of electricity, because all three use the same grid.</p>
   </section>
 
   <section aria-labelledby="mfg">
@@ -385,6 +408,40 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
     });
   }
 
+  // Use-stage modes: 100% bars for time and electricity
+  var modes = [
+    { name: "Charging", time: 2.8, kwh: 43.9, color: "--m-charge" },
+    { name: "Idle, car plugged in", time: 11.5, kwh: 10.5, color: "--m-idle" },
+    { name: "No vehicle", time: 85.8, kwh: 45.6, color: "--m-none" }
+  ];
+  function drawModes() {
+    var box = document.getElementById("modeChart"); box.innerHTML = "";
+    var W = 760, H = 172, left = 190, right = 20, sx = function (v) { return left + v / 100 * (W - left - right); };
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H });
+    [0, 25, 50, 75, 100].forEach(function (t) {
+      svg.appendChild(el("line", { x1: sx(t), x2: sx(t), y1: 14, y2: H - 48, class: "axis" }));
+      svg.appendChild(el("text", { x: sx(t), y: H - 30, "text-anchor": "middle", class: "lbl-muted" }, t + "%"));
+    });
+    [["Share of time", "time", 30], ["Share of electricity", "kwh", 92]].forEach(function (row) {
+      var x = sx(0);
+      svg.appendChild(el("text", { x: left - 12, y: row[2] + 24, "text-anchor": "end", "font-weight": 600 }, row[0]));
+      if (row[1] === "kwh") svg.appendChild(el("text", { x: left - 12, y: row[2] + 40, "text-anchor": "end", class: "lbl-muted" }, "= share of emissions"));
+      modes.forEach(function (m) {
+        var w = sx(m[row[1]]) - sx(0);
+        svg.appendChild(el("rect", { x: x, y: row[2], width: w, height: 38, fill: css(m.color) }));
+        var label = m[row[1]].toFixed(1) + "%";
+        if (w > 48) svg.appendChild(el("text", { x: x + w / 2, y: row[2] + 24, "text-anchor": "middle", fill: "#ffffff", style: "fill:#ffffff", class: "num" }, label));
+        else svg.appendChild(el("text", { x: x + 2, y: row[2] - 5, "text-anchor": "start", class: "num lbl-muted" }, label));
+        x += w;
+      });
+    });
+    box.appendChild(svg);
+    var lg = document.getElementById("modeLegend"); lg.innerHTML = "";
+    modes.forEach(function (m) {
+      var s = document.createElement("span"); var i = document.createElement("i"); i.style.background = css(m.color); s.appendChild(i); s.appendChild(document.createTextNode(m.name)); lg.appendChild(s);
+    });
+  }
+
   // Material chart
   var mats = [["PCB", 13.88, 3.0], ["PC housing", 6.70, 3.0], ["Copper (cable, body)", 5.88, 2.67], ["PVC cable jacket", 4.39, 2.33], ["Connector (as copper)", 1.96, 3.0], ["Cardboard", 1.86, 2.33], ["PA", 1.23, 2.33], ["Steel", 1.04, 3.0], ["Seven other materials", 1.46, null]];
   function drawMats() {
@@ -541,7 +598,7 @@ summary .gist { grid-column: 2 / 3; color: var(--muted); font-size: 0.9rem; }
     });
   }
 
-  function drawAll() { drawStages(); drawMats(); drawBench(); }
+  function drawAll() { drawStages(); drawModes(); drawMats(); drawBench(); }
   renderSteps("nb01List", nb01);
   renderSteps("nb02List", nb02);
   drawAll();
